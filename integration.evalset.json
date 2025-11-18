@@ -1,0 +1,35 @@
+{
+  "eval_set_id": "medilink_integration_suite",
+  "eval_cases": [
+    {
+      "eval_id": "case_1_fever_simple",
+      "conversation": [
+        {
+          "user_content": { "parts": [ { "text": "I have a fever since last night." } ] },
+          "final_response": { "parts": [ { "text": "Expect: safe advice about hydration and monitoring." } ] },
+          "intermediate_data": { "tool_uses": [ { "name": "lookup_symptom", "args": { "symptom": "fever" } } ] }
+        }
+      ]
+    },
+    {
+      "eval_id": "case_2_headache",
+      "conversation": [
+        {
+          "user_content": { "parts": [ { "text": "I have a severe headache and feel dizzy." } ] },
+          "final_response": { "parts": [ { "text": "Expect: safe recommendation + seek care if severe." } ] },
+          "intermediate_data": { "tool_uses": [ { "name": "lookup_symptom", "args": { "symptom": "headache" } } ] }
+        }
+      ]
+    },
+    {
+      "eval_id": "case_3_appointment",
+      "conversation": [
+        {
+          "user_content": { "parts": [ { "text": "Can you book an appointment for me on 2025-12-05 for cough?" } ] },
+          "final_response": { "parts": [ { "text": "Expect: create appointment via create_appointment tool." } ] },
+          "intermediate_data": { "tool_uses": [ { "name": "create_appointment", "args": { "patient_name": "Demo", "date_iso": "2025-12-05", "reason": "cough" } } ] }
+        }
+      ]
+    }
+  ]
+}
