@@ -8,7 +8,7 @@ from google.adk.tools import FunctionTool   # Correct tool class
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.adk.models import Gemini
-from google.adk import types
+from google.adk import types as adk_types
 import json
 
 
