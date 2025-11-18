@@ -37,8 +37,9 @@ MediLink/
 ├─ docs/
 │ ├─ architecture.png
 │ └─ submission_writeup.md
-└─ tests/
-└─ integration.evalset.json
+├─ tests/
+│   └─ integration.evalset.json
+
 ## Overview  
 MediLink is a simple, safe, multi-agent healthcare assistant built for the Kaggle × Google AI Agents Intensive Capstone Project.  
 It provides structured symptom guidance and appointment support using multi-agent communication, tools, memory, and context engineering.  
@@ -82,9 +83,10 @@ This project implements more than 3 required ADK concepts:
 - ✔ Evaluation using ADK  
 
 ---
-## Architecture  
-See architecture diagram:  
-docs/architecture.png
+## Architecture
+
+![MediLink Architecture](docs/architecture.png)
+
 
 ---
 
