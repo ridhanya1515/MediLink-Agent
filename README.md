@@ -1,120 +1,160 @@
-# MediLink — Multi-Agent Healthcare Assistant
+MediLink — Multi-Agent Healthcare Assistant
 
-**Short description**  
-MediLink is an AI-powered multi-agent healthcare assistant that performs symptom triage, provides safe preliminary guidance, and manages basic medical tasks using intelligent agent collaboration.
+Short Description
+MediLink is an AI-powered multi-agent healthcare assistant that performs symptom triage, provides safe preliminary guidance, and supports basic healthcare workflow tasks using coordinated intelligent agents.
 
----
+Project Goal
 
-## Project goal
-Build a reliable prototype agentic system that demonstrates: multi-agent communication (A2A), tool-calling, sessions & memory, context compaction, observability (logging/traces), and evaluation — focused on safe, explainable, minimal-risk healthcare assistance (triage & appointment assistance).
+Build a reliable agentic healthcare prototype demonstrating:
 
----
+Multi-agent communication (A2A)
 
-## Features
-- Symptom triage (structured questions → risk level)
-- Appointment scheduling helper (demo; not linked to real calendar)
-- Multi-agent design: Frontend agent (UI/chat), Triage agent, Knowledge agent (RAG or simple DB), and Orchestrator
-- Tool-calling pattern for actions (e.g., "create_appointment", "lookup_condition")
-- Sessions & short-term state (InMemorySessionService; optional DatabaseSessionService)
-- Context compaction (summarize history for token efficiency)
-- Local evaluation scripts to verify tool-trajectory and response quality
+Custom tool-calling
 
----
+Sessions & memory
 
-## Repo structure (suggested)
+Context compaction
+
+Observability (logging/tracing)
+
+Evaluation using ADK
+
+The system focuses on safe, explainable, and low-risk healthcare triage with simple appointment assistance.
+
+Features
+
+Extracts symptoms and returns structured information
+
+Provides safe, general recommendations
+
+Mock appointment scheduling
+
+Multi-agent architecture (Coordinator, Symptom Agent, Recommendation Agent)
+
+FunctionTool-based actions
+
+Session-aware memory support
+
+Context compaction (architecture ready)
+
+Evaluation with test cases
+
+Repository Structure
 MediLink/
 ├─ README.md
 ├─ LICENSE
 ├─ .gitignore
 ├─ requirements.txt
-├─ agent.py # main agent definitions (ADK or wrapper)
-├─ tools.py # tool implementations (fake DB, appointment tool)
-├─ runner.py # example runner to test sessions
-├─ evaluate.py # local evaluation runner + sample evalset JSON
+├─ agent.py
+├─ tools.py
+├─ memory.py
+├─ runner.py
+├─ evaluate.py
+├─ integration.evalset.json
 ├─ notebooks/
-│ ├─ demo.ipynb
-│ └─ evaluation.ipynb
+│   ├─ demo.ipynb
+│   └─ evaluation.ipynb
 ├─ docs/
-│ ├─ architecture.png
-│ └─ submission_writeup.md
-├─ tests/
-│   └─ integration.evalset.json
+│   ├─ architecture.png
+│   └─ submission_writeup.md
+└─ tests/
+    └─ integration.evalset.json
 
-## Overview  
-MediLink is a simple, safe, multi-agent healthcare assistant built for the Kaggle × Google AI Agents Intensive Capstone Project.  
-It provides structured symptom guidance and appointment support using multi-agent communication, tools, memory, and context engineering.  
-(Note: This is not medical advice. Only general guidance.)
+Overview
 
----
+MediLink is a safe demonstration project built for the Kaggle × Google AI Agents Intensive Capstone.
+It offers general, non-diagnostic healthcare assistance using multiple agents, tools, memory, and evaluation logic.
 
-## Problem Statement  
-People often feel confused when searching online for symptoms.  
-Most answers are inconsistent, unsafe, or unclear.  
-MediLink solves this by offering:  
-- Structured symptom understanding  
-- General guidance  
-- Red-flag warnings  
-- Simple appointment suggestions  
-- Memory-aware conversations  
+(Disclaimer: This prototype does not provide medical advice.)
 
----
+Problem Statement
 
-## Solution  
-MediLink uses a multi-agent system:
+Searching symptoms online often results in:
 
-- **Coordinator Agent** – manages the full workflow  
-- **Symptom Agent** – interprets user symptoms  
-- **Medical Info Agent** – fetches safe predefined medical info  
-- **Recommendation Agent** – gives simple next-step suggestions  
-- **Appointment Tool** – offers basic time slot suggestions  
+Unsafe or inconsistent answers
 
-This design makes the agent clear, modular, and safe.
+Confusion
 
----
+No structured follow-up
 
-## Key Concepts Used (Course Requirements)  
-This project implements more than 3 required ADK concepts:
+No clear next steps
 
-- ✔ Multi-agent system  
-- ✔ Custom tools  
-- ✔ Sessions & memory  
-- ✔ Context compaction  
-- ✔ A2A protocol (agents talking to each other)  
-- ✔ Evaluation using ADK  
+MediLink fixes this by offering:
 
----
-## Architecture
+Structured symptom extraction
 
-![MediLink Architecture](docs/architecture.png)
+Safe guidance
 
+Clear next-step suggestions
 
----
+Simple appointment assistance
 
-## How to Run  
-Install dependencies:
+Memory-aware conversation flow
+
+Solution
+
+MediLink uses a coordinated multi-agent design:
+
+1. Coordinator Agent
+
+Routes tasks between agents and tools.
+
+2. Symptom Agent
+
+Extracts simple symptom keywords safely.
+
+3. Recommendation Agent
+
+Provides very general, safe, non-medical recommendations.
+
+Tools
+
+lookup_symptom → returns predefined safe info
+
+create_appointment → mock appointment handler
+
+The architecture ensures safety, modularity, and clarity.
+
+Key Concepts Used
+
+✔ Multi-agent system
+
+✔ Custom FunctionTools
+
+✔ Sessions & memory
+
+✔ Long-term memory (file-based)
+
+✔ Context compaction support
+
+✔ A2A communication between agents
+
+✔ Evaluation workflow
+
+Architecture
+
+How to Run
+Install needed libraries:
 pip install -r requirements.txt
+
 Run the agent:
 python runner.py
 
----
+Evaluate:
+python evaluate.py
 
-## File Description  
+File Description
+File	Description
+agent.py	All agent definitions and A2A logic
+tools.py	Tools for symptom lookup & appointment
+memory.py	Simple memory handling
+runner.py	Runner for testing the main agent
+evaluate.py	Evaluation script
+notebooks/demo.ipynb	Interactive demo
+notebooks/evaluation.ipynb	Evaluation notebook
+docs/architecture.png	Architecture diagram
+docs/submission_writeup.md	Kaggle write-up
+tests/integration.evalset.json	Evaluation cases
+Links
 
-| File | Description |
-|------|-------------|
-| agent.py | All agent definitions |
-| tools.py | Tools for medical info + appointments |
-| runner.py | Runs and tests the system |
-| evaluate.py | Evaluation logic |
-| notebooks/demo.ipynb | Example interactions |
-| notebooks/evaluation.ipynb | Evaluation notebook |
-| docs/architecture.png | Architecture diagram |
-| docs/submission_writeup.md | Full detailed writeup |
-| tests/integration.evalset.json | Evaluation test cases |
-
----
-
-## Links  
-GitHub Repository:https://github.com/ridhanya1515/MediLink-Agent  
-
-
+GitHub Repository: https://github.com/ridhanya1515/MediLink-Agent
