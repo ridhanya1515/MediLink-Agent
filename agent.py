@@ -4,7 +4,7 @@ This version is FIXED for Kaggle (google-adk latest version).
 """
 
 from google.adk import Agent
-from google.adk.tools import FunctionTool   
+from google.adk.tools import FunctionTool   # Correct tool class
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.adk.models import Gemini
@@ -32,7 +32,7 @@ MEDICAL_DB = {
 
 
 # -------------------------------------------------------------------
-# 2. TOOL: lookup symptom (fixed)
+# 2. TOOL: lookup symptom
 # -------------------------------------------------------------------
 def lookup_symptom(symptom: str):
     symptom = symptom.lower().strip()
@@ -93,28 +93,4 @@ coordinator = Agent(
 
 
 # -------------------------------------------------------------------
-# 6. Runner for notebook
-# -------------------------------------------------------------------
-session_service = InMemorySessionService()
-runner = Runner(agent=coordinator, app_name="medilink_app", session_service=session_service)
-
-
-def run_medilink(message: str):
-    """
-    Helper for Kaggle notebook.
-    """
-    print(f"User: {message}\n---")
-    content = types.Content(parts=[types.Part(text=message)])
-    session_id = "demo_session"
-
-    for event in runner.run(
-        user_id="demo_user",
-        session_id=session_id,
-        new_message=content
-    ):
-        if event.is_final_response() and event.content:
-            for part in event.content.parts:
-                if hasattr(part, "text"):
-                    print("MediLink:", part.text)
-
-    print("\n")
+# 6. Runner (used in
