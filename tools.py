@@ -1,42 +1,48 @@
-"""
-MediLink Tools
-These are helper tools used by the agents.
-All data is SAFE, NON-MEDICAL, and demo-only.
-"""
-
+# tools.py
 import json
+from datetime import datetime
+from typing import Dict, Any
 
-FAKE_APPOINTMENTS = {
-    "slots": [
-        "Tomorrow 10:00 AM",
-        "Tomorrow 4:00 PM",
-        "Day after tomorrow 11:30 AM"
-    ]
+# Simple safe demo "database" and appointment tool for MediLink.
+
+MEDICAL_DB = {
+    "fever": {
+        "possible_causes": ["common cold", "viral infection"],
+        "advice": "Drink fluids, rest, and monitor temperature."
+    },
+    "headache": {
+        "possible_causes": ["stress", "dehydration"],
+        "advice": "Hydrate, rest, avoid bright screens."
+    },
+    "cough": {
+        "possible_causes": ["cold", "throat irritation"],
+        "advice": "Warm fluids and avoid dust."
+    }
 }
 
-def lookup_condition(condition: str) -> str:
-    """Return simple predefined info for a condition (safe demo only)."""
-    data = {
-        "fever": {
-            "info": "A temporary increase in body temperature.",
-            "advice": "Drink fluids and rest."
-        },
-        "cough": {
-            "info": "A reflex to clear your airways.",
-            "advice": "Sip warm fluids and stay in a clean space."
-        },
-        "headache": {
-            "info": "Pain or discomfort in the head.",
-            "advice": "Rest, hydrate, and avoid bright lights."
-        }
+def lookup_symptom(symptom: str) -> Dict[str, Any]:
+    """Return safe, non-diagnostic info about a symptom."""
+    s = symptom.lower().strip()
+    if s in MEDICAL_DB:
+        return {"ok": True, "symptom": s, "data": MEDICAL_DB[s]}
+    return {"ok": False, "error": "No safe data for that symptom."}
+
+# Simple in-memory mock appointment calendar (not linked to real calendar)
+APPOINTMENTS = []
+
+def create_appointment(patient_name: str, date_iso: str, reason: str) -> Dict[str, Any]:
+    """Create a demo appointment (safe mock). date_iso should be YYYY-MM-DD or ISO."""
+    try:
+        # Basic validation
+        dt = datetime.fromisoformat(date_iso)
+    except Exception:
+        return {"ok": False, "error": "Invalid date format. Use YYYY-MM-DD or full ISO."}
+
+    appt = {
+        "id": len(APPOINTMENTS) + 1,
+        "patient": patient_name,
+        "date": dt.date().isoformat(),
+        "reason": reason
     }
-
-    condition = condition.lower().strip()
-    return json.dumps(data.get(condition, {"error": "No data found"}), indent=2)
-
-def book_appointment(name: str) -> str:
-    """Returns a fake appointment slot."""
-    return json.dumps({
-        "patient": name,
-        "available_slots": FAKE_APPOINTMENTS["slots"]
-    }, indent=2)
+    APPOINTMENTS.append(appt)
+    return {"ok": True, "appointment": appt}
