@@ -1,13 +1,13 @@
 # agent.py
 """
 MediLink - Multi-Agent Healthcare Assistant (SAFE DEMO)
-------------------------------------------------------
-Agents:
-1. SymptomAgent      -> Extract symptom keyword
-2. SafetyAgent       -> Check for red-flag symptoms
-3. RecommendAgent    -> Provide safe guidance (NO diagnosis)
 
-Coordinator orchestrates agents.
+Agents:
+1. SymptomAgent   -> Extract primary symptom
+2. SafetyAgent    -> Detect red-flag / emergency symptoms
+3. RecommendAgent -> Provide safe, non-diagnostic guidance
+
+Coordinator orchestrates agents and manages memory.
 """
 
 import os
@@ -27,7 +27,7 @@ class SimpleAgent:
         self.instruction = instruction
         self.model = model
 
-    def run(self, message):
+    def run(self, message: str) -> str:
         prompt = f"{self.instruction}\n\nInput:\n{message}\n\nOutput:"
         model = genai.GenerativeModel(self.model)
         response = model.generate_content(prompt)
@@ -48,60 +48,74 @@ symptom_agent = SimpleAgent(
 safety_agent = SimpleAgent(
     name="SafetyAgent",
     instruction=(
-        "Check if the symptom description contains any RED-FLAG signs "
-        "(chest pain, breathing difficulty, seizures, loss of consciousness, severe bleeding).\n"
-        "Return only YES or NO."
+        "Check if the input mentions any emergency or red-flag symptoms such as:\n"
+        "chest pain, difficulty breathing, seizures, loss of consciousness, severe bleeding.\n"
+        "Return ONLY 'YES' or 'NO'."
     )
 )
 
 recommend_agent = SimpleAgent(
     name="RecommendAgent",
     instruction=(
-        "Provide safe, general health guidance based on the symptom.\n"
+        "Provide general, safe health guidance based on the information.\n"
         "DO NOT diagnose.\n"
         "Mention when to seek medical care.\n"
-        "Keep it short and reassuring."
+        "Keep the response short, calm, and supportive."
     )
 )
 
 # ================= COORDINATOR ====================
 
 class Coordinator:
-    def run(self, user_msg):
-        # Store user message in memory
-        memory.save_message("user", user_msg)
+    def run(self, user_msg: str, user_id: str = "demo_user") -> str:
+        """
+        Main orchestration logic for MediLink.
+        """
 
-        # 1. Safety check
+        # Save user message to memory
+        memory.save_message(user_id, "user", user_msg)
+
+        # 1️⃣ Safety / red-flag check
         danger = safety_agent.run(user_msg)
         if danger == "YES":
-            return (
-                "⚠️ Your symptoms may need urgent medical attention.\n"
-                "Please seek immediate care or contact emergency services."
+            response = (
+                "⚠️ Your symptoms may indicate a medical emergency.\n"
+                "Please seek immediate medical care or contact emergency services."
             )
+            memory.save_message(user_id, "assistant", response)
+            return response
 
-        # 2. Extract symptom
+        # 2️⃣ Extract symptom
         symptom = symptom_agent.run(user_msg)
         if symptom == "unclear":
-            return "Could you please describe your main symptom more clearly?"
+            response = "Could you please describe your main symptom more clearly?"
+            memory.save_message(user_id, "assistant", response)
+            return response
 
-        # 3. Lookup safe information
-        info = lookup_symptom(symptom)
+        # 3️⃣ Lookup safe symptom information
+        info_text = lookup_symptom(symptom)
 
-        # 4. Generate recommendation
-        advice = recommend_agent.run(info)
+        # 4️⃣ Generate safe recommendation
+        advice = recommend_agent.run(info_text)
 
-        # Save system response
-        memory.save_message("assistant", advice)
-
-        return (
-            f"**Symptom Identified:** {symptom}\n\n"
-            f"**General Information:** {info}\n\n"
-            f"**Guidance:** {advice}\n\n"
-            "If you'd like, I can help you create a demo doctor appointment."
+        final_response = (
+            f"Symptom identified: {symptom}\n\n"
+            f"{info_text}\n\n"
+            f"Guidance:\n{advice}\n\n"
+            "If you want, I can also help you create a demo doctor appointment."
         )
 
-    def create_demo_appointment(self, name):
-        return create_appointment(name)
+        # Save assistant response
+        memory.save_message(user_id, "assistant", final_response)
 
-# Export coordinator
+        return final_response
+
+    def create_demo_appointment(self, name: str, date_iso: str, reason: str):
+        """
+        Optional appointment creation hook.
+        """
+        return create_appointment(name, date_iso, reason)
+
+# ================= EXPORT =========================
+
 coordinator = Coordinator()
