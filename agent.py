@@ -1,121 +1,67 @@
 # agent.py
 """
-MediLink - Multi-Agent Healthcare Assistant (SAFE DEMO)
-
-Agents:
-1. SymptomAgent   -> Extract primary symptom
-2. SafetyAgent    -> Detect red-flag / emergency symptoms
-3. RecommendAgent -> Provide safe, non-diagnostic guidance
-
-Coordinator orchestrates agents and manages memory.
+Coordinator agent for MediLink.
+Decides which tool to use and generates safe responses.
 """
 
-import os
-import google.generativeai as genai
 from tools import lookup_symptom, create_appointment
-import memory
+from memory import update_memory
 
-# ================= API CONFIG =====================
+class CoordinatorAgent:
+    def run(self, user_message: str) -> str:
+        text = user_message.lower()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        # ---------- APPOINTMENT INTENT ----------
+        if "book" in text or "appointment" in text:
+            return self._handle_appointment(user_message)
 
-# ================= SIMPLE AGENT ===================
+        # ---------- SYMPTOM INTENT ----------
+        for symptom in ["fever", "headache", "cough"]:
+            if symptom in text:
+                info = lookup_symptom(symptom)
 
-class SimpleAgent:
-    def __init__(self, name, instruction, model="gemini-2.5-flash"):
-        self.name = name
-        self.instruction = instruction
-        self.model = model
+                update_memory(
+                    user_id="demo_user",
+                    key="last_symptom",
+                    value=symptom
+                )
 
-    def run(self, message: str) -> str:
-        prompt = f"{self.instruction}\n\nInput:\n{message}\n\nOutput:"
-        model = genai.GenerativeModel(self.model)
-        response = model.generate_content(prompt)
-        return response.text.strip()
+                return (
+                    f"{info}\n\n"
+                    "If symptoms become severe or persistent, consider seeking medical care."
+                )
 
-# ================= AGENTS =========================
-
-symptom_agent = SimpleAgent(
-    name="SymptomAgent",
-    instruction=(
-        "Extract ONE primary symptom keyword from the input.\n"
-        "Return ONLY a single lowercase word.\n"
-        "Examples: fever, headache, cough.\n"
-        "If unclear, return: unclear"
-    )
-)
-
-safety_agent = SimpleAgent(
-    name="SafetyAgent",
-    instruction=(
-        "Check if the input mentions any emergency or red-flag symptoms such as:\n"
-        "chest pain, difficulty breathing, seizures, loss of consciousness, severe bleeding.\n"
-        "Return ONLY 'YES' or 'NO'."
-    )
-)
-
-recommend_agent = SimpleAgent(
-    name="RecommendAgent",
-    instruction=(
-        "Provide general, safe health guidance based on the information.\n"
-        "DO NOT diagnose.\n"
-        "Mention when to seek medical care.\n"
-        "Keep the response short, calm, and supportive."
-    )
-)
-
-# ================= COORDINATOR ====================
-
-class Coordinator:
-    def run(self, user_msg: str, user_id: str = "demo_user") -> str:
-        """
-        Main orchestration logic for MediLink.
-        """
-
-        # Save user message to memory
-        memory.save_message(user_id, "user", user_msg)
-
-        # 1️⃣ Safety / red-flag check
-        danger = safety_agent.run(user_msg)
-        if danger == "YES":
-            response = (
-                "⚠️ Your symptoms may indicate a medical emergency.\n"
-                "Please seek immediate medical care or contact emergency services."
-            )
-            memory.save_message(user_id, "assistant", response)
-            return response
-
-        # 2️⃣ Extract symptom
-        symptom = symptom_agent.run(user_msg)
-        if symptom == "unclear":
-            response = "Could you please describe your main symptom more clearly?"
-            memory.save_message(user_id, "assistant", response)
-            return response
-
-        # 3️⃣ Lookup safe symptom information
-        info_text = lookup_symptom(symptom)
-
-        # 4️⃣ Generate safe recommendation
-        advice = recommend_agent.run(info_text)
-
-        final_response = (
-            f"Symptom identified: {symptom}\n\n"
-            f"{info_text}\n\n"
-            f"Guidance:\n{advice}\n\n"
-            "If you want, I can also help you create a demo doctor appointment."
+        # ---------- FALLBACK ----------
+        return (
+            "I can help with general symptom information or booking a doctor appointment. "
+            "Please describe your symptoms or request an appointment."
         )
 
-        # Save assistant response
-        memory.save_message(user_id, "assistant", final_response)
+    def _handle_appointment(self, text: str) -> str:
+        # VERY SIMPLE parsing (demo purpose)
+        date = "2025-12-05"
+        reason = "general checkup"
 
-        return final_response
+        if "cough" in text:
+            reason = "cough"
+        if "fever" in text:
+            reason = "fever"
 
-    def create_demo_appointment(self, name: str, date_iso: str, reason: str):
-        """
-        Optional appointment creation hook.
-        """
-        return create_appointment(name, date_iso, reason)
+        result = create_appointment(
+            patient_name="Demo",
+            date_iso=date,
+            reason=reason
+        )
 
-# ================= EXPORT =========================
+        if not result["ok"]:
+            return "Sorry, I could not create the appointment. Please check the date."
 
-coordinator = Coordinator()
+        appt = result["appointment"]
+        return (
+            f"Your appointment has been booked successfully.\n"
+            f"Date: {appt['date']}\n"
+            f"Reason: {appt['reason']}"
+        )
+
+# Single coordinator instance
+coordinator = CoordinatorAgent()
