@@ -1,25 +1,27 @@
 # runner.py
 """
-Run MediLink demo locally or in Kaggle. No real API keys needed for this mock demo.
+Run MediLink demo locally.
+This runner directly calls the Coordinator (NO ADK).
 """
 
 from agent import coordinator
-from google.adk.sessions import InMemorySessionService
-from google.adk.runners import Runner
-from google.adk import types as adk_types
 
-session_service = InMemorySessionService()
-runner = Runner(agent=coordinator, app_name="medilink_app", session_service=session_service)
-
-def run_medilink(message: str, user_id: str = "demo_user", session_id: str = "demo_session"):
+def run_medilink(message: str):
+    """
+    Runs MediLink and RETURNS the response (important for evaluation).
+    """
     print(f"User: {message}\n---")
-    content = adk_types.Content(parts=[adk_types.Part(text=message)])
-    for event in runner.run(user_id=user_id, session_id=session_id, new_message=content):
-        if event.is_final_response() and event.content:
-            for part in event.content.parts:
-                if hasattr(part, "text"):
-                    print("MediLink:", part.text)
+
+    response = coordinator.run(message)
+
+    print("MediLink:")
+    print(response)
     print("\n")
 
+    return response   # ✅ REQUIRED for evaluate.py
+
+# ================= ENTRY POINT ====================
+
 if __name__ == "__main__":
-    run_medilink("I have headache and a small fever")
+    user_input = input("Describe your symptoms: ")
+    run_medilink(user_input)
